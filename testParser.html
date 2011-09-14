@@ -7,9 +7,11 @@
     <div>
         <h1>test de transfo xsl en js</h1>
 
+        <xsl:if test="id > 4">
 
-        <xsl:if test="url = 'home'">
             <p>Vous êtes sur la home</p>
+            <xsl:value-of select="id" />
+
         </xsl:if>
 
 
@@ -23,7 +25,9 @@
         </xsl:for-each>
 
 
-        <xsl:choose>
+
+
+       <!-- <xsl:choose>
             <xsl:when test="id = 2">
                 <p>id = 2</p>
             </xsl:when>
@@ -33,7 +37,7 @@
             <xsl:otherwise>
                 <span>otherwise</span>
             </xsl:otherwise>
-        </xsl:choose>
+        </xsl:choose>-->
 
     </div>
 

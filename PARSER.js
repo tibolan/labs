@@ -1,3 +1,5 @@
+var START= new Date();
+
 /*
  * jeu de données
  * */
@@ -5,6 +7,7 @@
 var DATAS = {
     title: "Poney !",
     url : "home",
+    id: 5,
     users: [
         {
             name: "tibo",
@@ -39,6 +42,10 @@ var INPUT = fs.readFileSync(filename, "utf-8");
 
 var tree = new ET.ElementTree;
 tree.parse(INPUT);
+
+console.log(tree);
+
+
 var root = tree.getroot()
 
 
@@ -52,6 +59,7 @@ build(null, root, 0, DATAS);
  * function recursive servant a parser le DOM
  * */
 function build(parent, node, index, datas) {
+    //console.log(node);
     if (!parent) parent = node;
     //console.log(parent.tag, node.tag);
     var tag = node.tag,
@@ -95,6 +103,7 @@ function processXsl(parent, node, index, cmd, datas) {
                     var repl = parent.makeelement(elm.tag, elm.keys());
                     parent.insert(index, repl);
                     repl.text = elm.text;
+                    // TODO build le contenu genere
                 }
             }
             parent.remove(null, node);
@@ -147,7 +156,6 @@ function cloneNode(original, deep) {
 
 
 function pointer2obj(sPointer, oScope) {
-    console.log(oScope)
     var target = oScope;
     if (sPointer != ".") {
         var sp = sPointer.split(".");
@@ -175,7 +183,7 @@ var txt = tree.write();
 txt = txt.replace(/<\/?xsl:done\/?>/g, "");
 
 /*
- * save file
+ * save file-
  * */
 var OUTPUT = fs.writeFile("page.html", txt, function(err) {
     if (err) {
@@ -183,6 +191,7 @@ var OUTPUT = fs.writeFile("page.html", txt, function(err) {
     } else {
         console.log("The file was saved!");
     }
+    console.log("-----------------------------------*\n duration:"+(new Date - START)+"msl\n-----------------------------------*");
 });
 
 

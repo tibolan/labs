@@ -14,6 +14,11 @@ var DOC = {
         ]
         
     },
-    main: [],
+    main: [
+        {id:"bloc", {
+            name: "dsdsd"
+        }
+    }],
+
     title: "titre du document"
 }
