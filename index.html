@@ -7,20 +7,22 @@
 
 </head>
 <body>
-    <h1>Test socket.IO</h1>
+<h1>Test socket.IO</h1>
 
 
 <script>
-        var socket = io.connect('http://localhost:1177');
-        socket.on('news', function (data) {
-            console.log(data);
-            socket.emit('my other event', { my: 'data' });
-        });
-        setInterval(function (){
-            socket.emit("test", {id: "toto"})
-        }, 1000)
+    var socket = io.connect('http://localhost:1177');
 
-    </script>
+    document.body.onmouseover = function (e) {
+        // TODO: passer en % de la page
+        //socket.emit('mouse', {x:e.clientX, y:e.clientY, timestamp:new Date});
+
+    }
+    socket.on('bye', function (msg){
+            alert(msg);
+        });
+
+</script>
 
 </body>
 </html>

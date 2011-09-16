@@ -1,5 +1,3 @@
-var START= new Date();
-
 /*
  * jeu de données
  * */
@@ -30,7 +28,7 @@ var DATAS = {
     ]
 }
 
-
+var START = new Date();
 /*
  * require & vars
  * */
@@ -43,25 +41,19 @@ var INPUT = fs.readFileSync(filename, "utf-8");
 var tree = new ET.ElementTree;
 tree.parse(INPUT);
 
-console.log(tree);
-
-
 var root = tree.getroot()
-
 
 /*
  * START
  * */
-build(null, root, 0, DATAS);
+//build(null, root, 0, DATAS);
 
 
 /*
  * function recursive servant a parser le DOM
  * */
 function build(parent, node, index, datas) {
-    //console.log(node);
     if (!parent) parent = node;
-    //console.log(parent.tag, node.tag);
     var tag = node.tag,
         isXsl = tag.match(/^xsl:([^ ]*)/),
         cmd = isXsl ? isXsl[1] : null,
@@ -72,9 +64,10 @@ function build(parent, node, index, datas) {
     }
     else {
         for (var i = children.length; i > 0; i--) {
-            build(node, children[i - 1], i - 1, datas);
+            var ch = children[i-1];
+            build(node, children[i-1    ], i - 1, datas);
+            }
         }
-    }
 }
 
 
@@ -82,12 +75,11 @@ function build(parent, node, index, datas) {
  * XSL engine
  * */
 function processXsl(parent, node, index, cmd, datas) {
-    //console.log("XSL:", cmd, parent.tag, node.tag, datas)
+    return;
     switch (cmd) {
         case "value-of":
-            // replace value-of
             var repl = new ET.SubElement(parent, "xsl:done");
-            repl.text = pointer2obj(node.get("select"), datas);
+            repl.text = pointer2obj(node.get("select"), datas) + node.tail;
             // remove xsl node
             parent.remove(null, node);
             break;
@@ -95,39 +87,63 @@ function processXsl(parent, node, index, cmd, datas) {
             var test = node.get("test");
             var sp = test.split(" ");
             var data = pointer2obj(sp[0], datas);
+            console.log(node);
             var ok = evalTest(data, sp[1], sp[2]);
             if (ok) {
-                var ch = node._children;
-                for (var i = ch.length; i > 0; i--) {
-                    var elm = ch[i - 1];
-                    var repl = parent.makeelement(elm.tag, elm.keys());
-                    parent.insert(index, repl);
-                    repl.text = elm.text;
-                    // TODO build le contenu genere
-                }
+                replaceWithChildren(node, parent, index, datas);
+
+                //var clone = cloneNode(ch, true);
+
+
+                /*for (var i = ch.length; i > 0; i--) {
+                 var elm = ch[i - 1];
+                 var repl = cloneNode(elm, true);
+                 parent.insert(index, repl);
+                 repl.text = elm.text;
+                 // TODO build le contenu genere
+                 }*/
             }
             parent.remove(null, node);
             break;
         case "for-each":
-            var targets = node.get("select");
-            var tg = pointer2obj(targets, datas);
-            var ch = node._children;
+            break;
+            var targets = node.get("select"),
+                tg = pointer2obj(targets, datas),
+                ch = node._children;
 
-            var ctn = new ET.Element("xsl:done");
-            for (var i = 0; i < tg.length; i++) {
-                var obj = tg[i];
-                for (var j = 0,l = ch.length; j < l; j++) {
-                    var child = ch[j];
-                    var clone = cloneNode(child, true);
-                    var ctn2 = new ET.Element("xsl:done");
-                    ctn2.append(clone);
-                    build(ctn2, clone, 0, obj);
-                    ctn.append(ctn2);
-                }
+            for (var i = 0,l = tg.length; i < l; i++) {
+                replaceWithChildren(node, parent, index, tg[i]);
             }
             parent.insert(index, ctn);
             break;
     }
+}
+
+
+function replaceWithChildren(who, whoparent, index, datas) {
+    var replacer = new ET.Element("xsl:done"),
+        ch = who._children;
+    for (var i = 0; i < ch.length; i++) {
+        var child = ch[i];
+        var clone = cloneNode(child, true);
+        replacer.append(clone);
+        build(replacer, clone, i, datas);
+
+    }
+    whoparent.remove(null, who);
+    whoparent.setSlice(0,1, replacer._children);
+}
+function cloneNode(original, deep) {
+    var newOne = new ET.Element(original.tag, original.attrib);
+    if (deep) {
+        for (var i = 0,ch = original._children,l = ch.length; i < l; i++) {
+            newOne.append(cloneNode(ch[i], true));
+        }
+    }
+    else {
+        newOne.text = original.text;
+    }
+    return newOne;
 }
 
 
@@ -140,18 +156,6 @@ function evalTest(left, operator, right) {
     right = right.replace(/\'/g, "")
     if (operator == "=") operator = "==";
     return eval("'" + left + "'" + operator + "'" + right + "'");
-}
-
-
-function cloneNode(original, deep) {
-    var newOne = new ET.Element(original.tag, original.attrib);
-    newOne.text = original.text;
-    if (deep) {
-        for (var i = 0,ch = original._children,l = ch.length; i < l; i++) {
-            newOne.append(cloneNode(ch[i], true));
-        }
-    }
-    return newOne;
 }
 
 
@@ -177,21 +181,24 @@ function pointer2obj(sPointer, oScope) {
  * recuperation du doc sous forme de string
  * */
 var txt = tree.write();
-//console.log(tree.write());
 
 /* not to good... */
-txt = txt.replace(/<\/?xsl:done\/?>/g, "");
+//txt = txt.replace(/<\/?xsl:done\/?>/g, "");
+/* no too good too ...*/
+/*txt = txt.replace(/(\/>)|(\/\w+>)/g, function (m) {
+ return m + '\n';
+ });*/
 
 /*
  * save file-
  * */
 var OUTPUT = fs.writeFile("page.html", txt, function(err) {
-    if (err) {
-        console.log(err);
-    } else {
-        console.log("The file was saved!");
-    }
-    console.log("-----------------------------------*\n duration:"+(new Date - START)+"msl\n-----------------------------------*");
-});
+ if (err) {
+ console.log(err);
+ } else {
+ console.log("The file was saved!");
+ }
+ console.log("\n-----------------------------------*\n duration: " + (new Date - START) + "ms\n-----------------------------------*");
+ });
 
 

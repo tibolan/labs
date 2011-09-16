@@ -1,7 +1,6 @@
-<html xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:html="http://www.w3.org/1999/xhtml
-">
-<head xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <title><xsl:value-of select="title" /></title>
+<html xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:html="http://www.w3.org/1999/xhtml">
+<head>
+    <title>111111111111 <span><xsl:value-of select="title" /></span> 222222222222<span></span></title>
 </head>
 <body>
     <div>
@@ -9,8 +8,9 @@
 
         <xsl:if test="id > 4">
 
-            <p>Vous êtes sur la home</p>
-            <xsl:value-of select="id" />
+            <p>Vous êtes sur la home <xsl:value-of select="id" /></p>
+            <span>id:</span><xsl:value-of select="id" />
+
 
         </xsl:if>
 
@@ -21,6 +21,15 @@
             <xsl:for-each select="array">
                 <p>Welcome <xsl:value-of select="."/></p>
             </xsl:for-each>
+
+
+            <xsl:if test="id <= 5">
+
+            <p>Vous êtes sur la home <xsl:value-of select="id" /></p>
+            <span>id:</span><xsl:value-of select="id" />
+
+
+        </xsl:if>
 
         </xsl:for-each>
 
