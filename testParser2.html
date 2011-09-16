@@ -1,0 +1,58 @@
+<html xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:html="http://www.w3.org/1999/xhtml
+">
+<head xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <title><xsl:value-of select="title" /></title>
+</head>
+<body>
+    <div>
+        <h1>test de transfo xsl en js</h1>
+
+        <xsl:if test="id > 4">
+
+            <p>Vous êtes sur la home <xsl:value-of select="id" /></p>
+            <span>id:</span><xsl:value-of select="id" />
+
+
+        </xsl:if>
+
+
+        <xsl:for-each select="users">
+            <p>Welcome <xsl:value-of select="nickname"/></p>
+
+            <xsl:for-each select="array">
+                <p>Welcome <xsl:value-of select="."/></p>
+            </xsl:for-each>
+
+
+            <xsl:if test="id <= 5">
+
+            <p>Vous êtes sur la home <xsl:value-of select="id" /></p>
+            <span>id:</span><xsl:value-of select="id" />
+
+
+        </xsl:if>
+
+        </xsl:for-each>
+
+
+
+
+       <!-- <xsl:choose>
+            <xsl:when test="id = 2">
+                <p>id = 2</p>
+            </xsl:when>
+            <xsl:when test="id = 3">
+                <p>id = 3</p>
+            </xsl:when>
+            <xsl:otherwise>
+                <span>otherwise</span>
+            </xsl:otherwise>
+        </xsl:choose>-->
+
+    </div>
+
+
+</body>
+</html>
+
+
