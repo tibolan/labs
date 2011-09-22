@@ -1,8 +1,11 @@
-var StartTime = new Date;
+// import sugar 4 js
 var sugar = require("sugar");
 
+// measure perf
+var StartTime = new Date;
+
 /**
- *
+ *  @constructor XSLT
  * @param input -> sFile
  * @param output -> sFile
  * @param datas -> oJson
@@ -22,66 +25,82 @@ function XSLT (input, output, datas) {
 
 };
 
+/**
+ * Public method for launch the transformation
+ */
 XSLT.prototype.transform = function () {
     this.parse(this.source, 0, null);
     this.fs.writeFileSync(this.destination, this.tmp, "utf-8");
     return this.fs.readFileSync(this.destination, "utf-8");
 }
+/**
+ *
+ * @param src String
+ * @param from Int
+ * @param to Int
+ */
 XSLT.prototype.parse = function (src, from, to) {
     var i           = from,
         ch          = null,
         lockedTill  = -1,
         output      = "";
+    //
+    this.lockComment = this.lockComment || false;
 
-    this.lockComment = false;
-
+    // start parsing chars by chars the src
     while ((ch = src.charAt(i++)) && ((to) ? i<=to : true)) {
         // exit from the loop, all xsl transfo
         if(i<=this.lockWrite){
-            //console.log(i,this.lockWrite, ch)
             continue;
         }
+        // we listen to "<" char
         else if (ch === "<" && !this.lockComment) {
-            //console.log("--------------------", i);
+            // check if it's the beginning of an xsl tag
             var isXSL = this.checkXSLTagOpen(i);
+            // check if it's the beginning of an comment
             var isComment = this.checkCommentOpen(i);
-            //console.log(isXSL, isComment, isDoctype);
-            //var isCDATA = this.checkCData(i);
+
             if (isXSL) {
-                // find whole tag string
+                // built the object representing the node
                 var oTag = this.extractXSLTag(i);
-                //console.log(i + oTag.length -1);
+
+                // lock the while until the tag parsing is finish
                 this.lockWrite = i + oTag.length -1;
 
-                this.pushInDestination("<xsl:"+oTag.cmd+"/>");
                 // processXSL
                 // replace in this.tmp
+                this.pushInDestination("<xsl:"+oTag.cmd+"/>");
                 // change i to this.tmp.
             }
             else if(isComment){
+                // lock the comment section xsl search
                 this.lockComment = true;
+                // push char
                 this.pushInDestination(ch);
             }
             else {
                 this.pushInDestination(ch);
             }
         }
+        // we listen to ">" char
         else if (ch === ">"){
-            // closeTag
+            // check if it's the end of an xsl tag
             var isXSL = this.checkXSLTagClose(i);
+            // check if it's the end of an comment
             var isComment = this.checkCommentClose(i);
 
             if(isXSL){
+                // unlock
                 this.lockWrite = Math.Infinite;
             }
             else if(isComment){
+                // unlock
                 this.lockComment = false;
                 this.pushInDestination(ch);
             }
             else {
                 this.pushInDestination(ch);
             }
-            // unlock
         }
         else if (ch) {
             this.pushInDestination(ch);
@@ -121,11 +140,24 @@ XSLT.prototype.checkCommentClose = function (index) {
 
 XSLT.prototype.extractXSLTag = function (index) {
     // shorten the source and test it
-    //console.log(this.source.slice(index));
     var ext = (this.source.slice(index)).match(XSLT.REGEX_EXTRACT_XSL_TAG);
     var oTag = this.getXSLTagObject(ext, index);
     return oTag;
 }
+
+XSLT.prototype.readAttributeFromString = function (str) {
+    var match = str.match(XSLT.REGEX_SPLIT_ATTRIBUTE);
+    if(match){
+        return [match[1],match[2]];
+    }
+    return false;
+}
+
+/**
+ * build an object representing the xsl tag
+ * @param match
+ * @param index
+ */
 
 XSLT.prototype.getXSLTagObject = function (match, index) {
     var o = {};
@@ -134,9 +166,14 @@ XSLT.prototype.getXSLTagObject = function (match, index) {
     o.wholeString = this.findWholeTag(index, o.cmd);
     o.length = o.wholeString.length;
     //o.openTag = match[0];
+
     return o;
 }
 
+/**
+ * extract an attribute object from string
+ * @param str
+ */
 XSLT.prototype.extractAttribute = function (str) {
     // clear all space in attribute value
     str = str.replace(XSLT.REGEX_CLEAN_SPACE_IN_ATTRIBUTE, function() {
@@ -162,17 +199,20 @@ XSLT.prototype.extractAttribute = function (str) {
     return o;
 }
 
+/**
+ * write in the Buffer
+ * @param str
+ */
 XSLT.prototype.pushInDestination = function (str) {
     this.tmp += str;
 }
 
-XSLT.prototype.readAttributeFromString = function (str) {
-    var match = str.match(XSLT.REGEX_SPLIT_ATTRIBUTE);
-    if(match){
-        return [match[1],match[2]];
-    }
-    return false;
-}
+/**
+ * Extract the whole tag from the open tag to the close tag as string
+ * @param startIndex
+ * @param tagName
+ */
+
 
 XSLT.prototype.findWholeTag = function (startIndex, tagName) {
     var src = this.source.slice(startIndex);
@@ -194,6 +234,7 @@ XSLT.prototype.findWholeTag = function (startIndex, tagName) {
             var nested      =  ioClose > ioOpen;
 
             // if same xsl tag is nested in the current tag (ie: xsl:if inside a xsl:if);
+
             if(nested){
                 var nbOpen = src.match(new RegExp(openTag, "g"));
                 var nbClose = src.match(new RegExp(closeTag, "g"));
@@ -223,12 +264,18 @@ XSLT.REGEX_CLEAN_SPACE_IN_ATTRIBUTE = /(['"])(.*?)(['"])/g;
 XSLT.REGEX_SPLIT_ATTRIBUTE = /([^=]*?)=(.*)/;
 XSLT.REGEX_XSL_ATTRIBUTE = /([^=]*?)=(.*)/;
 
+
+/**
+ * TEST
+ */
+
+
 var input = "testParser.html",
     output = "generatedPage.html";
 
 var xsl = new XSLT(input, output, {test:"test"});
 var out = xsl.transform();
-//console.log(out);
+
 
 
 console.log("\n\nFile \""+ xsl.destination +"\" have been generated in", (new Date)-StartTime, "ms.");
