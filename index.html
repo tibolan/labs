@@ -4,24 +4,133 @@
 <head>
     <title></title>
     <script src="/socket.io/socket.io.js"></script>
+    <style type="text/css">
+        #mouseView {
+            position: fixed;
+
+            top: 0;
+            left: 0;
+            z-index: 1;
+            border: 3px inset black;
+        }
+
+        #page {
+            position: relative;
+            z-index: 2;
+            height: 100%;
+            width: 100%;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        #cursor {
+            cursor: help ;
+            position: absolute;
+            z-index: 1;
+            width: 15px;
+            height: 15px;
+            margin-left: -7.5px;
+            margin-top: -7.5px;
+            background: #ee82ee;
+        }
+    </style>
 
 </head>
 <body>
-<h1>Test socket.IO</h1>
-
-
-<script>
+<canvas id="mouseView"></canvas>
+<div id="page">
+    <h1>Test socket.IO</h1>
+    <label><input type="checkbox" id="showTrace"  checked="checked"/>Afficher le tracé</label>
+    <button onclick="clearTrace();">Nettoyer le tracé</button>
+    <label><input type="checkbox" id="showCursor" checked="checked"/>Afficher le curseur</label>
+</div>
+<span id="cursor"></span>
+<script type="text/javascript">
     var socket = io.connect('http://localhost:1177');
+    var points = [];
+    socket.on('hi', function (msg) {
+        alert(msg);
+    });
+    socket.on('sent', function (datas) {
+        points.push(datas);
+        refreshMouseView(datas);
+    });
 
-    document.body.onmouseover = function (e) {
-        // TODO: passer en % de la page
-        //socket.emit('mouse', {x:e.clientX, y:e.clientY, timestamp:new Date});
+
+    var rounder = function (val) {
+        return Math.round(val * 1000) / 1000;
+    }
+
+    var windowSize = {w: window.innerWidth, h:window.innerHeight};
+    var evts = ["load", "mousedown", "click", "mouseup", "mousemove", "dbclick", "resize"];
+    var evts = ["mousemove"];
+    for(var i=0,l=evts.length;i<l;i++){
+        document.body["on"+evts[i]]= function (e) {
+            socket.emit(e.type, {x: rounder(e.clientX / windowSize.w), y: rounder(e.clientY / windowSize.h), timestamp: (new Date).getTime()});
+        }
+    }
+
+
+
+
+    var canvas = document.getElementById("mouseView");
+    var showTrace = document.getElementById("showTrace");
+    var showCursor = document.getElementById("showCursor");
+    canvas.width = windowSize.w;
+    canvas.height = windowSize.h;
+    var w = canvas.offsetWidth;
+    var h = canvas.offsetHeight;
+
+    function refreshMouseView(datas) {
+
+
+        var ctx = canvas.getContext("2d");
+        var mouse = document.getElementById("cursor");
+
+        var x = Math.round(parseFloat(datas.x) * w);
+        var y = Math.round(parseFloat(datas.y) * h);
+
+        ctx.fillStyle = "rgba(255,0,0, .4)";
+
+        if(showTrace.checked){
+            canvas.style.display = "block";
+            ctx.fillRect(x, y, 3, 3);
+        }
+        else {
+            canvas.style.display = "none";
+        }
+
+        if(showCursor.checked){
+            mouse.style.left = x + document.body.scrollLeft + "px";
+            mouse.style.top = y + document.body.scrollTop + "px";
+            mouse.style.display = "block";
+        }
+        else {
+            mouse.style.display = "none";
+        }
+
+
+        //draw a circle
+        /*ctx.beginPath();
+         ctx.arc(x, y, 3, 0, Math.PI * 2, true);
+         ctx.closePath();
+         ctx.fill();*/
+
 
     }
-    socket.on('bye', function (msg){
-            alert(msg);
-        });
 
+    function clearTrace(){
+        var ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        var w = canvas.width;
+        canvas.width = 1;
+        canvas.width = w;
+    }
+
+
+    //(function () {return null;})();
 </script>
 
 </body>

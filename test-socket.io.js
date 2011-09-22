@@ -4,16 +4,30 @@ var app = require('http').createServer(handler)
     , mongoose = require('mongoose'),
     Schema = mongoose.Schema;
 
+
 mongoose.connect('mongodb://localhost/my_database');
 
-var MouseStorage = new Schema({
+var MousePosition = new Schema({
     timestamp       : { 'type': Date, 'default':Date.now},
-    x               : Number,
-    y               : Number
+    x               : String,
+    y               : String
+});
+
+var MouseClick = new Schema({
+    timestamp       : { 'type': Date, 'default':Date.now},
+    x               : String,
+    y               : String
+});
+
+var SessionTested = new Schema({
+    timestamp       : { 'type': Date, 'default':Date.now},
+    url               :String,
+    y               : String
 });
 
 
-var Mouse = mongoose.model('MouseStorage', MouseStorage);
+
+var Mouse = mongoose.model('MousePosition', MousePosition);
 
 
 app.listen(1177);
@@ -26,21 +40,22 @@ function handler(req, res) {
                 return res.end('Error loading index.html');
             }
 
-            res.writeHead(200);
+            res.writeHead(200, {'Content-Type': 'text/html'});
             res.end(data);
         });
 }
 
 io.sockets.on('connection', function (socket) {
-        socket.volatile.emit('bye', "byebye");
+    socket.volatile.emit('hi', "Hi dude");
 
 
-    socket.on('mouse', function (data) {
+    socket.on('mousemove', function (data) {
+
+        socket.emit('sent', data);
         var s = new Mouse();
         s.x = data.x;
         s.y = data.y;
         s.timestamp = data.timestamp;
-        console.log("******************************************", s);
         s.save(function(e){
         //    console.log(e);
         })

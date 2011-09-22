@@ -7,8 +7,8 @@ console.dir = function (what){
 
 var fs = require("fs");
 var sax = require("sax");
-var filename = "testParser2.html";
+var filename = "testParser.html";
 var INPUT = fs.readFileSync(filename, "utf-8");
-
 var tree = sax.parser(true);
-tree.write(INPUT);
+var a = tree.write(INPUT);
+
