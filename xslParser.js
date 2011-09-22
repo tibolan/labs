@@ -7,32 +7,42 @@ var sugar = require("sugar");
  * @param output -> sFile
  * @param datas -> oJson
  */
-var xslt = function (input, output, datas) {
+function XSLT (input, output, datas) {
     this.fs = require("fs");
     this.source = this.fs.readFileSync(input, "utf-8");
     this.destination = output;
     this.tmp = "";
     this.datas = datas;
     // clear old document
-    this.fs.unlinkSync(this.destination);
-    
+    try{
+        this.fs.unlinkSync(this.destination);
+    }
+    catch(e){}
+
+
 };
 
-xslt.prototype.transform = function () {
+XSLT.prototype.transform = function () {
     this.parse(this.source, 0, null);
     this.fs.writeFileSync(this.destination, this.tmp, "utf-8");
     return this.fs.readFileSync(this.destination, "utf-8");
 }
-xslt.prototype.parse = function (src, from, to) {
+XSLT.prototype.parse = function (src, from, to) {
     var i           = from,
         ch          = null,
         lockedTill  = -1,
         output      = "";
 
     this.lockComment = false;
-    this.lockWrite = false;
+
     while ((ch = src.charAt(i++)) && ((to) ? i<=to : true)) {
-        if (ch === "<" && !this.lockComment) {
+        // exit from the loop, all xsl transfo
+        if(i<=this.lockWrite){
+            //console.log(i,this.lockWrite, ch)
+            continue;
+        }
+        else if (ch === "<" && !this.lockComment) {
+            //console.log("--------------------", i);
             var isXSL = this.checkXSLTagOpen(i);
             var isComment = this.checkCommentOpen(i);
             //console.log(isXSL, isComment, isDoctype);
@@ -40,7 +50,10 @@ xslt.prototype.parse = function (src, from, to) {
             if (isXSL) {
                 // find whole tag string
                 var oTag = this.extractXSLTag(i);
-                this.lockWrite = true;
+                //console.log(i + oTag.length -1);
+                this.lockWrite = i + oTag.length -1;
+
+                this.pushInDestination("<xsl:"+oTag.cmd+"/>");
                 // processXSL
                 // replace in this.tmp
                 // change i to this.tmp.
@@ -59,7 +72,7 @@ xslt.prototype.parse = function (src, from, to) {
             var isComment = this.checkCommentClose(i);
 
             if(isXSL){
-                this.lockWrite = false;
+                this.lockWrite = Math.Infinite;
             }
             else if(isComment){
                 this.lockComment = false;
@@ -76,66 +89,70 @@ xslt.prototype.parse = function (src, from, to) {
     }
 }
 
-xslt.prototype.checkXSLTagOpen = function (index) {
+XSLT.prototype.checkXSLTagOpen = function (index) {
     // shorten the source and test it
-    return xslt.REGEX_OPEN_XSL.test(this.source.slice(index));
+    return XSLT.REGEX_OPEN_XSL.test(this.source.slice(index));
 }
 
-xslt.prototype.checkDoctypeOpen = function (index) {
+XSLT.prototype.checkDoctypeOpen = function (index) {
     // shorten the source and test it
-    return xslt.REGEX_OPEN_DOCTYPE.test(this.source.slice(index));
+    return XSLT.REGEX_OPEN_DOCTYPE.test(this.source.slice(index));
 }
 
-xslt.prototype.checkCommentOpen = function (index) {
+XSLT.prototype.checkCommentOpen = function (index) {
     // shorten the source and test it
-    return xslt.REGEX_OPEN_COMMENT.test(this.source.slice(index));
+    return XSLT.REGEX_OPEN_COMMENT.test(this.source.slice(index));
 }
 
-xslt.prototype.checkXSLTagClose = function (index) {
+XSLT.prototype.checkXSLTagClose = function (index) {
     // shorten the source and test it
-    return xslt.REGEX_CLOSE_XSL.test(this.source.slice(0, index));
+    return XSLT.REGEX_CLOSE_XSL.test(this.source.slice(0, index));
 }
 
-xslt.prototype.checkDoctypeClose = function (index) {
+XSLT.prototype.checkDoctypeClose = function (index) {
     // shorten the source and test it
-    return xslt.REGEX_CLOSE_DOCTYPE.test(this.source.slice(0, index));
+    return XSLT.REGEX_CLOSE_DOCTYPE.test(this.source.slice(0, index));
 }
 
-xslt.prototype.checkCommentClose = function (index) {
+XSLT.prototype.checkCommentClose = function (index) {
     // shorten the source and test it
-    return xslt.REGEX_CLOSE_COMMENT.test(this.source.slice(0, index));
+    return XSLT.REGEX_CLOSE_COMMENT.test(this.source.slice(0, index));
 }
 
-xslt.prototype.extractXSLTag = function (index) {
+XSLT.prototype.extractXSLTag = function (index) {
     // shorten the source and test it
     //console.log(this.source.slice(index));
-    var ext = (this.source.slice(index)).match(xslt.REGEX_EXTRACT_XSL_TAG);
+    var ext = (this.source.slice(index)).match(XSLT.REGEX_EXTRACT_XSL_TAG);
     var oTag = this.getXSLTagObject(ext, index);
-    //console.log(oTag);
     return oTag;
 }
 
-xslt.prototype.getXSLTagObject = function (match, index) {
+XSLT.prototype.getXSLTagObject = function (match, index) {
     var o = {};
     o.cmd = match[1];
     o.attributes = this.extractAttribute(match[2])
-    o.length = match[0].length + 1;
-    o.wholeString = this.findWholeTag(index,o.cmd);
+    o.wholeString = this.findWholeTag(index, o.cmd);
+    o.length = o.wholeString.length;
+    //o.openTag = match[0];
     return o;
 }
 
-xslt.prototype.extractAttribute = function (str) {
+XSLT.prototype.extractAttribute = function (str) {
     // clear all space in attribute value
-    str = str.replace(xslt.REGEX_CLEAN_SPACE_IN_ATTRIBUTE, function() {
+    str = str.replace(XSLT.REGEX_CLEAN_SPACE_IN_ATTRIBUTE, function() {
         return arguments[2].replace(/ /g, "");
     })
-
+    // 
     var o = {};
+    
+    // separate attribute
     var sp = str.split(" ");
     
     for(var i=0,l=sp.length;i<l;i++){
         var attr = sp[i];
+        // split attribyte as key/value
         var kv = this.readAttributeFromString(attr);
+        // store
         if(kv){
             o[kv[0]] = kv[1];
         }
@@ -145,45 +162,71 @@ xslt.prototype.extractAttribute = function (str) {
     return o;
 }
 
-xslt.prototype.pushInDestination = function (str) {
+XSLT.prototype.pushInDestination = function (str) {
     this.tmp += str;
 }
 
-xslt.prototype.readAttributeFromString = function (str) {
-    var match = str.match(xslt.REGEX_SPLIT_ATTRIBUTE);
+XSLT.prototype.readAttributeFromString = function (str) {
+    var match = str.match(XSLT.REGEX_SPLIT_ATTRIBUTE);
     if(match){
         return [match[1],match[2]];
     }
     return false;
 }
 
-xslt.prototype.findWholeTag = function (startIndex, tagName) {
+XSLT.prototype.findWholeTag = function (startIndex, tagName) {
     var src = this.source.slice(startIndex);
+    var out = "<";
     switch(tagName){
+        // value-of is autoclose tag
         case "value-of":
+            out += src.match(XSLT.REGEX_EXTRACT_XSL_TAG)[0];
             break;
+        default:
+            var openTag     = "<xsl:"+tagName;
+            var closeTag    = "</xsl:"+tagName+">";
+            var ioClose     = src.indexOf(closeTag);
+            var ioOpen      = src.indexOf(openTag);
+            if(ioOpen == -1) {
+                ioOpen = Math.Infinite;
+            }
 
+            var nested      =  ioClose > ioOpen;
+
+            // if same xsl tag is nested in the current tag (ie: xsl:if inside a xsl:if);
+            if(nested){
+                var nbOpen = src.match(new RegExp(openTag, "g"));
+                var nbClose = src.match(new RegExp(closeTag, "g"));
+                console.log(openTag, nbOpen.length, nbClose.length);
+                
+            }
+            else {
+                out += src.slice(0, ioClose) + closeTag;
+            }
     }
+    return out;
 
 }
 
 
 
 
-xslt.REGEX_OPEN_XSL = /^xsl:/;
-xslt.REGEX_CLOSE_XSL = /\/xsl:[^>]*?>$/;
-xslt.REGEX_OPEN_DOCTYPE = /^!DOCTYPE/;
-xslt.REGEX_CLOSE_DOCTYPE = /^<!DOCTYPE [^>]*?>$/;
-xslt.REGEX_CLOSE_COMMENT = /-->$/;
-xslt.REGEX_OPEN_COMMENT = /^!--/;
-xslt.REGEX_EXTRACT_XSL_TAG = /^xsl:([a-z-]*) ?((.)*?)\/?>/;
-xslt.REGEX_CLEAN_SPACE_IN_ATTRIBUTE = /(['"])(.*?)(['"])/g;
-xslt.REGEX_SPLIT_ATTRIBUTE = /([^=]*?)=(.*)/;
+XSLT.REGEX_OPEN_XSL = /^xsl:/;
+XSLT.REGEX_CLOSE_XSL = /\/xsl:[^>]*?>$/;
+XSLT.REGEX_OPEN_DOCTYPE = /^!DOCTYPE/;
+XSLT.REGEX_CLOSE_DOCTYPE = /^<!DOCTYPE [^>]*?>$/;
+XSLT.REGEX_CLOSE_COMMENT = /-->$/;
+XSLT.REGEX_OPEN_COMMENT = /^!--/;
+
+XSLT.REGEX_EXTRACT_XSL_TAG = /^xsl:([a-z-]*) ?((.)*?)\/?>/;
+XSLT.REGEX_CLEAN_SPACE_IN_ATTRIBUTE = /(['"])(.*?)(['"])/g;
+XSLT.REGEX_SPLIT_ATTRIBUTE = /([^=]*?)=(.*)/;
+XSLT.REGEX_XSL_ATTRIBUTE = /([^=]*?)=(.*)/;
 
 var input = "testParser.html",
     output = "generatedPage.html";
 
-var xsl = new xslt(input, output, {test:"test"});
+var xsl = new XSLT(input, output, {test:"test"});
 var out = xsl.transform();
 //console.log(out);
 
