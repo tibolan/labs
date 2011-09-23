@@ -1,8 +1,7 @@
-// import sugar 4 js
-var sugar = require("sugar");
-
 // measure perf
 var StartTime = new Date;
+// import sugar 4 js
+//var sugar = require("sugar");
 
 /**
  *  @constructor XSLT
@@ -236,9 +235,37 @@ XSLT.prototype.findWholeTag = function (startIndex, tagName) {
             // if same xsl tag is nested in the current tag (ie: xsl:if inside a xsl:if);
 
             if(nested){
-                var nbOpen = src.match(new RegExp(openTag, "g"));
-                var nbClose = src.match(new RegExp(closeTag, "g"));
-                console.log(openTag, nbOpen.length, nbClose.length);
+                var re = openTag +"|"+ closeTag;
+                var nbOpen = src.match(new RegExp(re, "g"));
+                var nNested = 1;
+
+                for(var i=0,open=1,l=nbOpen.length;i<l;i++){
+                    //console.log(i,":",nbOpen[i], openTag)
+                    if(nbOpen[i] == openTag){
+                        nNested++;
+                        open++;
+                    }
+                    else {
+                        nNested--;
+                    }
+                    if(nNested <= 0) break;
+                }
+
+
+                var re2 = new RegExp("(.+?\\/xsl:"+tagName+">){"+(open)+"}", "g");
+
+                /*
+                               /^(.*?\/xsl:if>){3}/g;
+
+                            */
+
+
+                console.log(re2)
+                console.log(src.match(re2))
+
+
+
+                
                 
             }
             else {
