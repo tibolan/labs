@@ -1,64 +1,64 @@
 <!DOCTYPE html>
 <html xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:html="http://www.w3.org/1999/xhtml">
 <head>
-    <title>111111111111 <span><xsl:value-of select="title" /></span> 222222222222<span></span> 33333333333</title>
+    <title>Test XSL & JSON with NodeJS</title>
 </head>
 <body>
-    <div>
-        <h1>test de transfo xsl en js</h1>
+<div>
+    <p class="test">
+        <strong>value-of: should see "test test test"</strong>
+        <xsl:value-of select="title"/>
+    </p>
 
-        <xsl:if test="id > number(4)">
-            <p>Vous êtes sur la home <xsl:value-of select="id" /></p>
-            <span>id:</span><xsl:value-of select="id" />
+    <p class="test">
+        <strong>if: should see OK</strong>
+        <xsl:if test="id = 4 && id2 != 'toto'">OK</xsl:if>
+    </p>
 
+    <p class="test">
+        <strong>if: should not see KO</strong>
+        <xsl:if test="id &gt; id2">KO</xsl:if>
+    </p>
 
+    <p class="test">
+        <strong>embed if: should see OKOK</strong>
+        <xsl:if test="test.retest.test = 999">
+            OK
+            <xsl:if test="id2 = 5">OK</xsl:if>
         </xsl:if>
+    </p>
 
-        <xsl:if test="id > number(4)">
-            <xsl:if test="id > number(4)">
-                <xsl:if test="id > number(4)">sdqs</xsl:if>
-
-            </xsl:if>
-            <p>Vous êtes sur la home <xsl:value-of select="id" /></p>
-            <span>id:</span><xsl:value-of select="id" />
-
-
+    <p class="test">
+        <strong>embed if: should see OK, not OKKO</strong>
+        <xsl:if test="id = 4">
+            OK
+            <xsl:if test="id2 = 4">KO</xsl:if>
         </xsl:if>
+    </p>
 
-
+    <p class="test">
+        <strong>for-each: should see 4 user</strong>
         <xsl:for-each select="users">
-            <p>Welcome <xsl:value-of select="nickname"/></p>
-
-            <xsl:for-each select="array">
-                <p>Welcome <xsl:value-of select="."/></p>
-
-            </xsl:for-each>
-            <xsl:for-each select="array">
-                <p>Welcome <xsl:value-of select="."/></p>
-            </xsl:for-each>
-
-
+            <p>User name:
+                <xsl:value-of select="name"/>
+                , user id:
+                <xsl:value-of select="id"/>
+            </p>
         </xsl:for-each>
-        <xsl:for-each select="array">
-                <p>Welcome <xsl:value-of select="."/></p>
-            </xsl:for-each>
-
-
-
-       <xsl:choose>
-            <xsl:when test="id = 2">
+        <!--<xsl:choose>
+            <xsl:when test="id1 &lt; 2">
                 <p>id = 2</p>
             </xsl:when>
-            <xsl:when test="id = 3">
+            <xsl:when test="id2 = 3">
                 <p>id = 3</p>
             </xsl:when>
             <xsl:otherwise>
                 <span>otherwise</span>
             </xsl:otherwise>
-        </xsl:choose>
+        </xsl:choose>-->
 
-    </div>
+</div>
 
 
 </body>
-</html><!-- END  -->
+</html><!-- END  -->    
