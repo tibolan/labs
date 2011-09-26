@@ -5,60 +5,103 @@
 </head>
 <body>
 <div>
-    <p class="test">
+    <div class="test">
         <strong>value-of: should see "test test test"</strong>
         <xsl:value-of select="title"/>
-    </p>
+    </div>
 
-    <p class="test">
+    <div class="test">
         <strong>if: should see OK</strong>
         <xsl:if test="id = 4 && id2 != 'toto'">OK</xsl:if>
-    </p>
+    </div>
 
-    <p class="test">
+    <div class="test">
         <strong>if: should not see KO</strong>
         <xsl:if test="id &gt; id2">KO</xsl:if>
-    </p>
+    </div>
 
-    <p class="test">
-        <strong>embed if: should see OKOK</strong>
+    <div class="test">
+        <strong>nested if: should see OKOK</strong>
         <xsl:if test="test.retest.test = 999">
             OK
             <xsl:if test="id2 = 5">OK</xsl:if>
         </xsl:if>
-    </p>
+    </div>
 
-    <p class="test">
-        <strong>embed if: should see OK, not OKKO</strong>
+    <div class="test">
+        <strong>nested if: should see OK, not OKKO</strong>
         <xsl:if test="id = 4">
             OK
             <xsl:if test="id2 = 4">KO</xsl:if>
         </xsl:if>
-    </p>
+    </div>
 
-    <p class="test">
-        <strong>for-each: should see 4 user</strong>
-        <xsl:for-each select="users">
-            <p>User name:
-                <xsl:value-of select="name"/>
-                , user id:
-                <xsl:value-of select="id"/>
-            </p>
-        </xsl:for-each>
-        <!--<xsl:choose>
-            <xsl:when test="id1 &lt; 2">
-                <p>id = 2</p>
-            </xsl:when>
-            <xsl:when test="id2 = 3">
-                <p>id = 3</p>
-            </xsl:when>
-            <xsl:otherwise>
-                <span>otherwise</span>
-            </xsl:otherwise>
-        </xsl:choose>-->
+    <div class="test">
+        <strong>for-each: should see 4 users</strong>
+        <ul>
+            <xsl:for-each select="users">
+                <li>
+                    <ul>
+                        <li>User name: <xsl:value-of select="name"/></li>
+                        <li>User id: <xsl:value-of select="id"/></li>
+                    </ul>
+                </li>
+            </xsl:for-each>
+        </ul>
+    </div>
+
+    <div class="test">
+        <strong>for-each with predica: should see 3 users</strong>
+        <ul>
+            <xsl:for-each select="users[id&gt;1]">
+                <li>
+                    <ul>
+                        <li>User name: <xsl:value-of select="name"/></li>
+                        <li>User id: <xsl:value-of select="id"/></li>
+                    </ul>
+                </li>
+            </xsl:for-each>
+        </ul>
+    </div>
+
+    <div class="test">
+        <strong>nested for-each: should see 4 user with a list af hobbies for each one</strong>
+        <ul>
+            <xsl:for-each select="users">
+                <li>
+                    <xsl:value-of select="name" />
+                    <ul><xsl:for-each select="hobbies">
+                        <li>like <xsl:value-of select="."/></li></xsl:for-each>
+                    </ul>
+                </li>
+            </xsl:for-each>
+        </ul>
+    </div>
+
+    <div class="test">
+        <strong>custom test function: should see OK</strong>
+        <ul>
+            <xsl:if test="exists('id2') && id = 4">
+                OK
+            </xsl:if>
+        </ul>
+    </div>
+
+    
+            <!--<xsl:choose>
+        <xsl:when test="id1 &lt; 2">
+            <div>id = 2<div>
+        </xsl:when>
+        <xsl:when test="id2 = 3">
+            <p>id = 3</p>
+        </xsl:when>
+        <xsl:otherwise>
+            <span>otherwise</span>
+        </xsl:otherwise>
+    </xsl:choose>-->
 
 </div>
 
 
 </body>
-</html><!-- END  -->    
+</html><!-- END  -->

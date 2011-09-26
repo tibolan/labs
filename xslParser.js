@@ -1,8 +1,9 @@
-var StartTime = new Date;
 /**
  * @TODO: xsl in comment processing option (true parse xsl, false write chars)
  * @TODO: xsl:apply, xsl:templates
  * @TODO: test="exists(path.to.a.property)"
+ * @TODO: disable_output_escaping
+ *
  *
  * @TOEXPLAIN: space in test value between left, operand and right
  */
@@ -66,7 +67,6 @@ XSLT.prototype.transform = function () {
  * @param to Int
  */
 XSLT.prototype.parse = function (src, datas, printSrc) {
-    if(printSrc) console.log(src, "\n___________________________________");
     var i = 0,
         ch = null,
         output = "";
@@ -82,7 +82,6 @@ XSLT.prototype.parse = function (src, datas, printSrc) {
             var isXSL = this.checkXSLTagOpen(src, i);
             // check if it's the beginning of an comment
             var isComment = this.checkCommentOpen(src, i);
-            if(printSrc) console.log(isXSL);
 
             if (isXSL) {
                 // built the object representing the node
@@ -220,7 +219,7 @@ XSLT.prototype.extractAttribute = function (str) {
 XSLT.prototype.processXSL = function (oTag, datas) {
     switch (oTag.cmd) {
         case "value-of":
-            return datas[oTag.attributes.select];
+            return this.objectPropertyPointer(datas, oTag.attributes.select);
             break;
         case  "if":
             var ok = this.evalTest(oTag.attributes.test, datas);
@@ -231,8 +230,18 @@ XSLT.prototype.processXSL = function (oTag, datas) {
                 return "";
             }
             break;
+        case  "for-each":
+            var select = this.objectPropertyPointer(datas, oTag.attributes.select);
+            var out = "";
+            var inner = this.getInnerTag(oTag.cmd, oTag.wholeString);
+            for (var i = 0, l = select.length; i < l; i++) {
+                var obj = select[i];
+                out += this.parse(inner, obj, true);
+            }
+            return out;
+            break;
         default:
-            return "<xsl />";
+            return "<xsl:unknow />";
     }
 }
 
@@ -244,6 +253,8 @@ XSLT.prototype.processXSL = function (oTag, datas) {
  */
 
 XSLT.prototype.evalTest = function (test, datas) {
+
+
     // transform &gt; en >
     test = test.replace(/&gt;/g, ">");
     // transform &lt; en <
@@ -257,6 +268,13 @@ XSLT.prototype.evalTest = function (test, datas) {
         if(!str) return "";
         return _self.objectPropertyPointer(datas, str) || str;
     });
+
+    var fnToExec = test.match(/(\w+)\(((["'])\w+\3)\)/);
+    if(fnToExec){
+        //console.log(fnToExec);
+        test = test.replace(fnToExec[0], eval(fnToExec[1]).apply(datas, [fnToExec[2]]));
+        console.log("$:", test);
+    }
 
     return eval(test);
 }
@@ -276,7 +294,15 @@ XSLT.prototype.evalTest = function (test, datas) {
  *      this.objectPropertyPointer(object, "o2.o3.property"); // return "value";
  */
 XSLT.prototype.objectPropertyPointer = function (object, path) {
+    console.log("________________________\n",path,"\n************************")
     var target = object;
+    var predica = path.match(/(\w+(\[(.*?)\]))/);
+    var _self = this;
+
+    if(predica){
+        path = path.substring(0, path.length - predica[2].length);
+    }
+
     if (path != ".") {
         var sp = path.split(".");
         for (var i = 0,l = sp.length; i < l; i++) {
@@ -284,6 +310,22 @@ XSLT.prototype.objectPropertyPointer = function (object, path) {
             if (!target) break;
         }
     }
+
+    if(predica){
+        console.log("__________________________________");
+        console.log("path:", path);
+        console.log("target:", target);
+        console.log("predica:", predica);
+        target = target.filter(function (item, index){
+            if(_self.evalTest(predica[3], item)){
+                return true;
+            }
+            return false;
+        });
+    }
+
+    console.log("---:",target);
+
     return target;
 }
 
@@ -383,6 +425,7 @@ XSLT.PARSERCHARS = "";
 
 var input = "testParser.html",
     output = "generatedPage.html";
+var StartTime = (new Date).getTime();
 
 var xsl = new XSLT(input, output, {
     title:"test test test",
@@ -395,14 +438,21 @@ var xsl = new XSLT(input, output, {
         }
     },
     users: [
-        {id: 1, name:"tata"},
-        {id: 2, name:"tete"},
-        {id: 3, name:"titi"},
-        {id: 4, name:"toto"}
+        {id: 1, name:"tata", hobbies: ["athletism"]},
+        {id: 2, name:"tete", hobbies: ["basket", "baseball"]},
+        {id: 3, name:"titi", hobbies: ["cricket", "curling"]},
+        {id: 4, name:"toto", hobbies: ["diving", "dining"]}
     ]
 
 });
 var out = xsl.transform();
 //console.log(XSLT.PARSERCHARS);
-var EndTime = (new Date)
+var EndTime = (new Date).getTime();
 console.log("\n* File \"" + xsl.destination + "\" have been generated in", EndTime - StartTime, "ms.");
+
+
+
+function exists(what){
+    //console.log("I:", this, XSLT.prototype.objectPropertyPointer.apply(XSLT.prototype, [this, "users[2]"]))
+    return typeof XSLT.prototype.objectPropertyPointer.apply(XSLT.prototype, [this, what]) != "undefined"; //XSLT.prototype.objectPropertyPointer.apply(this, [this, what]) || false;
+}

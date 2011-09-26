@@ -5,54 +5,160 @@
 </head>
 <body>
 <div>
-    <p class="test">
+    <div class="test">
         <strong>value-of: should see "test test test"</strong>
         test test test
-    </p>
+    </div>
 
-    <p class="test">
+    <div class="test">
         <strong>if: should see OK</strong>
         OK
-    </p>
+    </div>
 
-    <p class="test">
+    <div class="test">
         <strong>if: should not see KO</strong>
         
-    </p>
+    </div>
 
-    <p class="test">
-        <strong>embed if: should see OKOK</strong>
+    <div class="test">
+        <strong>nested if: should see OKOK</strong>
         
             OK
             OK
         
-    </p>
+    </div>
 
-    <p class="test">
-        <strong>embed if: should see OK, not OKKO</strong>
+    <div class="test">
+        <strong>nested if: should see OK, not OKKO</strong>
         
             OK
-            KO
+            
         
-    </p>
+    </div>
 
-    <p class="test">
-        <strong>for-each: should see 4 user</strong>
-        <xsl />
-        <!--<xsl:choose>
-            <xsl:when test="id1 &lt; 2">
-                <p>id = 2</p>
-            </xsl:when
-            <xsl:when test="id2 = 3">
-                <p>id = 3</p>
-            </xsl:when
-            <xsl:otherwise>
-                <span>otherwise</span>
-            </xsl:otherwise
-        </xsl:choose-->
+    <div class="test">
+        <strong>for-each: should see 4 users</strong>
+        <ul>
+            
+                <li>
+                    <ul>
+                        <li>User name: tata</li>
+                        <li>User id: 1</li>
+                    </ul>
+                </li>
+            
+                <li>
+                    <ul>
+                        <li>User name: tete</li>
+                        <li>User id: 2</li>
+                    </ul>
+                </li>
+            
+                <li>
+                    <ul>
+                        <li>User name: titi</li>
+                        <li>User id: 3</li>
+                    </ul>
+                </li>
+            
+                <li>
+                    <ul>
+                        <li>User name: toto</li>
+                        <li>User id: 4</li>
+                    </ul>
+                </li>
+            
+        </ul>
+    </div>
+
+    <div class="test">
+        <strong>for-each with predica: should see 3 users</strong>
+        <ul>
+            
+                <li>
+                    <ul>
+                        <li>User name: tete</li>
+                        <li>User id: 2</li>
+                    </ul>
+                </li>
+            
+                <li>
+                    <ul>
+                        <li>User name: titi</li>
+                        <li>User id: 3</li>
+                    </ul>
+                </li>
+            
+                <li>
+                    <ul>
+                        <li>User name: toto</li>
+                        <li>User id: 4</li>
+                    </ul>
+                </li>
+            
+        </ul>
+    </div>
+
+    <div class="test">
+        <strong>nested for-each: should see 4 user with a list af hobbies for each one</strong>
+        <ul>
+            
+                <li>
+                    tata
+                    <ul>
+                        <li>like athletism</li>
+                    </ul>
+                </li>
+            
+                <li>
+                    tete
+                    <ul>
+                        <li>like basket</li>
+                        <li>like baseball</li>
+                    </ul>
+                </li>
+            
+                <li>
+                    titi
+                    <ul>
+                        <li>like cricket</li>
+                        <li>like curling</li>
+                    </ul>
+                </li>
+            
+                <li>
+                    toto
+                    <ul>
+                        <li>like diving</li>
+                        <li>like dining</li>
+                    </ul>
+                </li>
+            
+        </ul>
+    </div>
+
+    <div class="test">
+        <strong>custom test function: should see OK</strong>
+        <ul>
+            
+        </ul>
+    </div>
+
+    
+            <!--<xsl:choose>
+        <xsl:when test="id1 &lt; 2">
+            <div>id = 2<div>
+        </xsl:when
+        <xsl:when test="id2 = 3">
+            <p>id = 3</p>
+        </xsl:when
+        <xsl:otherwise>
+            <span>otherwise</span>
+        </xsl:otherwise
+    </xsl:choose-->
 
 </div>
 
 
 </body>
-</html><!-- END  -->    
+</html><!-- END  -->
