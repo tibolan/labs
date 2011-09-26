@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:html="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Test XSL & JSON with NodeJS</title>
+</head>
+<body>
+<div>
+    <p class="test">
+        <strong>value-of: should see "test test test"</strong>
+        test test test
+    </p>
+
+    <p class="test">
+        <strong>if: should see OK</strong>
+        OK
+    </p>
+
+    <p class="test">
+        <strong>if: should not see KO</strong>
+        
+    </p>
+
+    <p class="test">
+        <strong>embed if: should see OKOK</strong>
+        
+            OK
+            OK
+        
+    </p>
+
+    <p class="test">
+        <strong>embed if: should see OK, not OKKO</strong>
+        
+            OK
+            KO
+        
+    </p>
+
+    <p class="test">
+        <strong>for-each: should see 4 user</strong>
+        <xsl />
+        <!--<xsl:choose>
+            <xsl:when test="id1 &lt; 2">
+                <p>id = 2</p>
+            </xsl:when
+            <xsl:when test="id2 = 3">
+                <p>id = 3</p>
+            </xsl:when
+            <xsl:otherwise>
+                <span>otherwise</span>
+            </xsl:otherwise
+        </xsl:choose-->
+
+</div>
+
+
+</body>
+</html><!-- END  -->    
