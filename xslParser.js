@@ -220,7 +220,6 @@ XSLT.prototype.processXSL = function (oTag, datas) {
     switch (oTag.cmd) {
         case "value-of":
             return this.objectPropertyPointer(datas, oTag.attributes.select);
-            break;
         case  "if":
             var ok = this.evalTest(oTag.attributes.test, datas);
             if (ok) {
@@ -229,7 +228,6 @@ XSLT.prototype.processXSL = function (oTag, datas) {
             else {
                 return "";
             }
-            break;
         case  "for-each":
             var select = this.objectPropertyPointer(datas, oTag.attributes.select);
             var out = "";
@@ -239,7 +237,36 @@ XSLT.prototype.processXSL = function (oTag, datas) {
                 out += this.parse(inner, obj, true);
             }
             return out;
+        // when are manually treated for simulate break in switch/case
+        case "choose":
+            var src = this.getInnerTag(oTag.cmd, oTag.wholeString);
+            var whens = src.split("</xsl:when>");
+            var OneWhenOK = false;
+            for (var i = 0, l = whens.length; i < l; i++) {
+                if (i != l - 1) {
+                    var when = whens[i];
+                    var test = when.match(/test=(['"])(.*?)\1/)[2].replace(/\s/g, "");
+                    var ok = this.evalTest(test, datas);
+                    if(ok){
+                        OneWhenOK = true;
+                        var inner = this.getInnerTag(oTag.cmd, when);
+                        return this.parse(inner, datas);
+                    }
+                    else {
+                        continue;
+                    }
+
+                }
+            }
+
+            if(!OneWhenOK){
+                var otherwise = src.split("<xsl:otherwise>");
+                var wholeTag = "<xsl:otherwise>" + otherwise[1];
+                return this.parse(wholeTag, datas);
+            }
             break;
+        case "otherwise":
+            return this.parse(this.getInnerTag(oTag.cmd, oTag.wholeString), datas, true);
         default:
             return "<xsl:unknow />";
     }
@@ -254,7 +281,6 @@ XSLT.prototype.processXSL = function (oTag, datas) {
 
 XSLT.prototype.evalTest = function (test, datas) {
 
-
     // transform &gt; en >
     test = test.replace(/&gt;/g, ">");
     // transform &lt; en <
@@ -263,14 +289,14 @@ XSLT.prototype.evalTest = function (test, datas) {
     test = test.replace(/([^!<>=])=([^!<>=])/g, "$1==$2");
 
     var fnToExec = test.match(/(\w+)\(((["'])(\w+)\3)\)/);
-    if(fnToExec){
+    if (fnToExec) {
         test = test.replace(fnToExec[0], eval(fnToExec[1]).apply(datas, [fnToExec[4]]));
     }
 
     var _self = this;
-    var test = test.replace(/([^!<>=&])*/g, function (){
+    var test = test.replace(/([^!<>=&])*/g, function () {
         var str = arguments[0];
-        if(!str) return "";
+        if (!str) return "";
         return _self.objectPropertyPointer(datas, str) || str;
     });
 
@@ -298,7 +324,7 @@ XSLT.prototype.objectPropertyPointer = function (object, path) {
     var predica = path.match(/(\w+(\[(.*?)\]))/);
     var _self = this;
 
-    if(predica){
+    if (predica) {
         path = path.substring(0, path.length - predica[2].length);
     }
 
@@ -310,9 +336,9 @@ XSLT.prototype.objectPropertyPointer = function (object, path) {
         }
     }
 
-    if(predica){
-        target = target.filter(function (item, index){
-            if(_self.evalTest(predica[3], item)){
+    if (predica) {
+        target = target.filter(function (item, index) {
+            if (_self.evalTest(predica[3], item)) {
                 return true;
             }
             return false;
@@ -327,9 +353,6 @@ XSLT.prototype.getInnerTag = function (cmd, str) {
     var end = cmd.length + 7; // </xsl:>
     var l = str.length;
     return str.slice(start, l - end);
-
-
-    return tag.match(XSLT.REGEX_EXTRACT_XSL_TAG);
 }
 /**
  * Extract the whole tag from the open tag to the close tag as string
@@ -398,8 +421,6 @@ XSLT.prototype.findWholeTag = function (src, startIndex, tagName) {
 
 XSLT.REGEX_OPEN_XSL = /^<?xsl:/;
 XSLT.REGEX_CLOSE_XSL = /\/xsl:[^>]*?>$/;
-XSLT.REGEX_OPEN_DOCTYPE = /^!DOCTYPE/;
-XSLT.REGEX_CLOSE_DOCTYPE = /^<!DOCTYPE [^>]*?>$/;
 XSLT.REGEX_CLOSE_COMMENT = /-->$/;
 XSLT.REGEX_OPEN_COMMENT = /^!--/;
 
@@ -442,8 +463,11 @@ var out = xsl.transform();
 var EndTime = (new Date).getTime();
 console.log("\n*** File \"" + xsl.destination + "\" have been generated in", EndTime - StartTime, "ms. ***");
 
+function normalizeWhiteSpace(what) {
+    console.log("WHAT:", what.match(/^\W*(.*)/))
+    return what.replace(/^\W*|\W*$/g, "");
+}
 
-
-function exists(what){
+function exists(what) {
     return typeof XSLT.prototype.objectPropertyPointer.apply(XSLT.prototype, [this, what]) != "undefined";
 }
