@@ -262,6 +262,11 @@ XSLT.prototype.evalTest = function (test, datas) {
     // transform = en ==
     test = test.replace(/([^!<>=])=([^!<>=])/g, "$1==$2");
 
+    var fnToExec = test.match(/(\w+)\(((["'])(\w+)\3)\)/);
+    if(fnToExec){
+        test = test.replace(fnToExec[0], eval(fnToExec[1]).apply(datas, [fnToExec[4]]));
+    }
+
     var _self = this;
     var test = test.replace(/([^!<>=&])*/g, function (){
         var str = arguments[0];
@@ -269,13 +274,8 @@ XSLT.prototype.evalTest = function (test, datas) {
         return _self.objectPropertyPointer(datas, str) || str;
     });
 
-    var fnToExec = test.match(/(\w+)\(((["'])\w+\3)\)/);
-    if(fnToExec){
-        //console.log(fnToExec);
-        test = test.replace(fnToExec[0], eval(fnToExec[1]).apply(datas, [fnToExec[2]]));
-        console.log("$:", test);
-    }
 
+    console.log("evaluated test:", test);
     return eval(test);
 }
 
@@ -294,7 +294,6 @@ XSLT.prototype.evalTest = function (test, datas) {
  *      this.objectPropertyPointer(object, "o2.o3.property"); // return "value";
  */
 XSLT.prototype.objectPropertyPointer = function (object, path) {
-    console.log("________________________\n",path,"\n************************")
     var target = object;
     var predica = path.match(/(\w+(\[(.*?)\]))/);
     var _self = this;
@@ -312,10 +311,6 @@ XSLT.prototype.objectPropertyPointer = function (object, path) {
     }
 
     if(predica){
-        console.log("__________________________________");
-        console.log("path:", path);
-        console.log("target:", target);
-        console.log("predica:", predica);
         target = target.filter(function (item, index){
             if(_self.evalTest(predica[3], item)){
                 return true;
@@ -323,8 +318,6 @@ XSLT.prototype.objectPropertyPointer = function (object, path) {
             return false;
         });
     }
-
-    console.log("---:",target);
 
     return target;
 }
@@ -439,20 +432,18 @@ var xsl = new XSLT(input, output, {
     },
     users: [
         {id: 1, name:"tata", hobbies: ["athletism"]},
-        {id: 2, name:"tete", hobbies: ["basket", "baseball"]},
-        {id: 3, name:"titi", hobbies: ["cricket", "curling"]},
+        {id: 2, name:"tete", hobbies: ["basket", "baseball", "beachVolley"]},
+        {id: 3, name:"titi", hobbies: ["cricket", "curling", "climbing"]},
         {id: 4, name:"toto", hobbies: ["diving", "dining"]}
     ]
 
 });
 var out = xsl.transform();
-//console.log(XSLT.PARSERCHARS);
 var EndTime = (new Date).getTime();
-console.log("\n* File \"" + xsl.destination + "\" have been generated in", EndTime - StartTime, "ms.");
+console.log("\n*** File \"" + xsl.destination + "\" have been generated in", EndTime - StartTime, "ms. ***");
 
 
 
 function exists(what){
-    //console.log("I:", this, XSLT.prototype.objectPropertyPointer.apply(XSLT.prototype, [this, "users[2]"]))
-    return typeof XSLT.prototype.objectPropertyPointer.apply(XSLT.prototype, [this, what]) != "undefined"; //XSLT.prototype.objectPropertyPointer.apply(this, [this, what]) || false;
+    return typeof XSLT.prototype.objectPropertyPointer.apply(XSLT.prototype, [this, what]) != "undefined";
 }
