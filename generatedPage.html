@@ -4,6 +4,10 @@
     <title>Test XSL & JSON with NodeJS</title>
 </head>
 <body>
+<html xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:html="http://www.w3.org/1999/xhtml">
+
+
+</html>
 <div>
     <div class="test">
         <strong>value-of: should see "test test test"</strong>
@@ -17,145 +21,126 @@
 
     <div class="test">
         <strong>if: should not see KO</strong>
-        
+
     </div>
 
     <div class="test">
         <strong>nested if: should see OKOK</strong>
-        
-            OK
-            OK
-        
+        OK
+        OK
     </div>
 
     <div class="test">
         <strong>nested if: should see OK, not OKKO</strong>
-        
-            OK
-            
-        
+        OK
+
     </div>
 
     <div class="test">
         <strong>for-each: should see 4 users</strong>
         <ul>
-            
-                <li>
-                    <ul>
-                        <li>User name: tata</li>
-                        <li>User id: 1</li>
-                    </ul>
-                </li>
-            
-                <li>
-                    <ul>
-                        <li>User name: tete</li>
-                        <li>User id: 2</li>
-                    </ul>
-                </li>
-            
-                <li>
-                    <ul>
-                        <li>User name: titi</li>
-                        <li>User id: 3</li>
-                    </ul>
-                </li>
-            
-                <li>
-                    <ul>
-                        <li>User name: toto</li>
-                        <li>User id: 4</li>
-                    </ul>
-                </li>
-            
+            <li>
+                <ul>
+                    <li>User name: tata</li>
+                    <li>User id: 1</li>
+                </ul>
+            </li>
+            <li>
+                <ul>
+                    <li>User name: tete</li>
+                    <li>User id: 2</li>
+                </ul>
+            </li>
+            <li>
+                <ul>
+                    <li>User name: titi</li>
+                    <li>User id: 3</li>
+                </ul>
+            </li>
+            <li>
+                <ul>
+                    <li>User name: toto</li>
+                    <li>User id: 4</li>
+                </ul>
+            </li>
         </ul>
     </div>
 
     <div class="test">
         <strong>for-each with predica: should see 3 users</strong>
         <ul>
-            
-                <li>
-                    <ul>
-                        <li>User name: tete</li>
-                        <li>User id: 2</li>
-                    </ul>
-                </li>
-            
-                <li>
-                    <ul>
-                        <li>User name: titi</li>
-                        <li>User id: 3</li>
-                    </ul>
-                </li>
-            
-                <li>
-                    <ul>
-                        <li>User name: toto</li>
-                        <li>User id: 4</li>
-                    </ul>
-                </li>
-            
+            <li>
+                <ul>
+                    <li>User name: tete</li>
+                    <li>User id: 2</li>
+                </ul>
+            </li>
+            <li>
+                <ul>
+                    <li>User name: titi</li>
+                    <li>User id: 3</li>
+                </ul>
+            </li>
+            <li>
+                <ul>
+                    <li>User name: toto</li>
+                    <li>User id: 4</li>
+                </ul>
+            </li>
         </ul>
     </div>
 
     <div class="test">
         <strong>nested for-each: should see 4 user with a list af hobbies for each one</strong>
         <ul>
-            
-                <li>
-                    tata
-                    <ul>
-                        <li>like athletism</li>
-                    </ul>
-                </li>
-            
-                <li>
-                    tete
-                    <ul>
-                        <li>like basket</li>
-                        <li>like baseball</li>
-                        <li>like beachVolley</li>
-                    </ul>
-                </li>
-            
-                <li>
-                    titi
-                    <ul>
-                        <li>like cricket</li>
-                        <li>like curling</li>
-                        <li>like climbing</li>
-                    </ul>
-                </li>
-            
-                <li>
-                    toto
-                    <ul>
-                        <li>like diving</li>
-                        <li>like dining</li>
-                    </ul>
-                </li>
-            
+            <li>
+                tata
+                <ul>
+                    <li>like athletism</li>
+                </ul>
+            </li>
+            <li>
+                tete
+                <ul>
+                    <li>like basket</li>
+                    <li>like baseball</li>
+                    <li>like beachVolley</li>
+                </ul>
+            </li>
+            <li>
+                titi
+                <ul>
+                    <li>like cricket</li>
+                    <li>like curling</li>
+                    <li>like climbing</li>
+                </ul>
+            </li>
+            <li>
+                toto
+                <ul>
+                    <li>like diving</li>
+                    <li>like dining</li>
+                </ul>
+            </li>
         </ul>
     </div>
 
     <div class="test">
         <strong>custom test function: should see OK</strong>
         <ul>
-            
-                OK
-            
+            OK
         </ul>
     </div>
 
-    
-            
-            <span>otherwise</span>
-        
-    
+
+    <span>otherwise</span>
 
 </div>
 
+<h1>TPL 1</h1>
+
+TEST1
+TEST2
 
 </body>
 </html><!-- END  -->
